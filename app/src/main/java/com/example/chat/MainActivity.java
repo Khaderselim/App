@@ -2,10 +2,12 @@ package com.example.chat;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -21,7 +23,9 @@ public class MainActivity extends AppCompatActivity {
     private EditText textField;
     private Button button;
     private String message;
+    private TextView textView;
 
+    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -29,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
 
         textField = findViewById(R.id.editText1);
         button = findViewById(R.id.button1);
-
+        textView = findViewById(R.id.textView1);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 message = textField.getText().toString();
@@ -57,7 +61,8 @@ public class MainActivity extends AppCompatActivity {
                     try {
                         String serverResponse;
                         while ((serverResponse = in.readLine()) != null) {
-                            System.out.println(serverResponse);
+                            String finalServerResponse = serverResponse;
+                            textView.post(() -> textView.setText(textView.getText() + finalServerResponse+"\n"));
                         }
                     } catch (IOException e) {
                         e.printStackTrace();

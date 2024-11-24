@@ -18,4 +18,14 @@
         android:text="Send"
         android:id="@+id/button1"/>
 
+    <!-- Spacer to lower the TextView -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="20dp" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="match_parent"
+        android:layout_height="450dp" />
+
 </LinearLayout>
