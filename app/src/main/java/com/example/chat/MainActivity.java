@@ -7,7 +7,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -23,7 +24,9 @@ public class MainActivity extends AppCompatActivity {
     private EditText textField;
     private Button button;
     private String message;
-    private TextView textView;
+    private ListView listView;
+    private MessageAdapter adapter;
+    private ArrayList<String> messages;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -33,11 +36,20 @@ public class MainActivity extends AppCompatActivity {
 
         textField = findViewById(R.id.editText1);
         button = findViewById(R.id.button1);
-        textView = findViewById(R.id.textView1);
+        listView = findViewById(R.id.textView1);
+        messages = new ArrayList<>();
+        adapter = new MessageAdapter(this, messages);
+        listView.setAdapter(adapter);
+
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 message = textField.getText().toString();
-                new Thread(new ClientThread(message)).start();
+                if (!message.isEmpty()) {
+                    messages.add("Me: " + message);
+                    adapter.notifyDataSetChanged();
+                    textField.setText("");
+                    new Thread(new ClientThread(message)).start();
+                }
             }
         });
 
@@ -53,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             try {
-                client = new Socket("192.168.232.122", 1234);
+                client = new Socket("192.168.1.9", 1234);
                 printwriter = new PrintWriter(client.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
@@ -62,7 +74,10 @@ public class MainActivity extends AppCompatActivity {
                         String serverResponse;
                         while ((serverResponse = in.readLine()) != null) {
                             String finalServerResponse = serverResponse;
-                            textView.post(() -> textView.setText(textView.getText() + finalServerResponse+"\n"));
+                            runOnUiThread(() -> {
+                                messages.add(finalServerResponse);
+                                adapter.notifyDataSetChanged();
+                            });
                         }
                     } catch (IOException e) {
                         e.printStackTrace();
@@ -95,7 +110,6 @@ public class MainActivity extends AppCompatActivity {
         public void run() {
             if (isConnected()) {
                 printwriter.println(message);
-                runOnUiThread(() -> textField.setText(""));
             } else {
                 runOnUiThread(() -> Toast.makeText(MainActivity.this, "Not connected to server", Toast.LENGTH_SHORT).show());
             }
