@@ -3,6 +3,7 @@ package com.example.chat;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -27,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private ListView listView;
     private MessageAdapter adapter;
     private ArrayList<String> messages;
+    private String username;
 
     @SuppressLint("MissingInflatedId")
     @Override
@@ -40,6 +42,10 @@ public class MainActivity extends AppCompatActivity {
         messages = new ArrayList<>();
         adapter = new MessageAdapter(this, messages);
         listView.setAdapter(adapter);
+
+        Intent intent = getIntent();
+        username = intent.getStringExtra("username");
+
 
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
@@ -65,9 +71,13 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void run() {
             try {
-                client = new Socket("192.168.1.9", 1234);
+                client = new Socket("192.168.232.123", 1234);
                 printwriter = new PrintWriter(client.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
+
+                if (username != null) {
+                    printwriter.println(username);
+                }
 
                 new Thread(() -> {
                     try {
