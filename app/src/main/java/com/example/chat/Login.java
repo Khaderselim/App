@@ -36,6 +36,7 @@ public class Login extends AppCompatActivity {
         button = findViewById(R.id.button);
 
         Intent intent = new Intent(this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
