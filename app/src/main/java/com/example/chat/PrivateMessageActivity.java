@@ -1,15 +1,15 @@
 package com.example.chat;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -18,38 +18,41 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
-public class MainActivity extends AppCompatActivity {
-
-    private Socket client;
+public class PrivateMessageActivity extends AppCompatActivity {
+    private TextView contactNameTV;
     private PrintWriter printwriter;
-    private EditText textField;
-    private Button button;
-    private String message;
-    private ListView listView;
-    private MessageAdapter adapter;
     private ArrayList<String> messages;
+    private MessageAdapter adapter;
     private String username;
 
-    @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_private_message);
 
-        textField = findViewById(R.id.editText1);
-        button = findViewById(R.id.button1);
-        listView = findViewById(R.id.textView1);
+        contactNameTV = findViewById(R.id.idTVContactName);
+        EditText textField = findViewById(R.id.editText1);
+        Button button = findViewById(R.id.button1);
+        ListView listView = findViewById(R.id.textView1);
         messages = new ArrayList<>();
         adapter = new MessageAdapter(this, messages);
         listView.setAdapter(adapter);
 
         Intent intent = getIntent();
+        String contactName = intent.getStringExtra("contactName");
         username = intent.getStringExtra("username");
+        contactNameTV.setText(contactName);
 
-
+        // Retrieve the socket from SocketManager
+        Socket socket = SocketManager.getInstance().getSocket();
+        if (socket != null) {
+            new ConnectionThread(socket, contactName).start();
+        } else {
+            Toast.makeText(this, "Socket is null", Toast.LENGTH_SHORT).show();
+        }
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                message = textField.getText().toString();
+                String message = textField.getText().toString();
                 if (!message.isEmpty()) {
                     messages.add("Me: " + message);
                     adapter.notifyDataSetChanged();
@@ -58,32 +61,30 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
-
-        // Start the connection thread
-        new Thread(new ConnectionThread()).start();
     }
 
-    private boolean isConnected() {
-        return client != null && client.isConnected() && !client.isClosed();
-    }
+    class ConnectionThread extends Thread {
+        private Socket socket;
+        private String contactName;
 
-    class ConnectionThread implements Runnable {
+        public ConnectionThread(Socket socket, String contactName) {
+            this.socket = socket;
+            this.contactName = contactName;
+        }
+
         @Override
         public void run() {
             try {
-                client = new Socket("192.168.1.9", 1234);
+                Socket client = socket;
                 printwriter = new PrintWriter(client.getOutputStream(), true);
                 BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
-
-                if (username != null) {
-                    printwriter.println(username);
-                }
-
+                printwriter.println("***PRV0***");
+                printwriter.println(contactName);
                 new Thread(() -> {
                     try {
                         String serverResponse;
                         while ((serverResponse = in.readLine()) != null) {
-                            String finalServerResponse = serverResponse;
+                            String finalServerResponse = serverResponse.replace(username+":", "Me:");
                             runOnUiThread(() -> {
                                 messages.add(finalServerResponse);
                                 adapter.notifyDataSetChanged();
@@ -93,18 +94,8 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }).start();
-
-                runOnUiThread(() -> {
-                    if (isConnected()) {
-                        Toast.makeText(MainActivity.this, "Connected to server", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(MainActivity.this, "Failed to connect to server", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
             } catch (IOException e) {
                 e.printStackTrace();
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Failed to connect to server", Toast.LENGTH_SHORT).show());
             }
         }
     }
@@ -118,10 +109,10 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void run() {
-            if (isConnected()) {
+            if (printwriter != null) {
+                printwriter.println("***PRV***");
+                printwriter.println(contactNameTV.getText().toString());
                 printwriter.println(message);
-            } else {
-                runOnUiThread(() -> Toast.makeText(MainActivity.this, "Not connected to server", Toast.LENGTH_SHORT).show());
             }
         }
     }
