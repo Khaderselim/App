@@ -1,17 +1,26 @@
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/idTVContactName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Contact Name"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp" />
 
     <ListView
         android:id="@+id/textView1"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
+        android:layout_width="395dp"
+        android:layout_height="564dp"
         android:layout_above="@+id/editText1"
         android:layout_alignParentTop="true"
+        android:layout_marginTop="58dp"
         android:stackFromBottom="true"
         android:transcriptMode="normal" />
 
@@ -28,5 +37,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:text="Send" />
+
+    <!-- Add more UI elements for private messaging here -->
 
 </RelativeLayout>
