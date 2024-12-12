@@ -14,6 +14,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
 
@@ -65,6 +68,7 @@ public class Contact extends AppCompatActivity {
 
         new Thread(new ConnectionThread()).start();
     }
+
     private Boolean isUsernameValid(String newUsername) {
         for (ContactsModal contactsModal : contactsModalArrayList) {
             if (contactsModal.getUsername().equals(newUsername)) {
@@ -112,16 +116,32 @@ public class Contact extends AppCompatActivity {
         @Override
         public void run() {
             try {
-                Socket client = new Socket("192.168.1.9", 1234);
+                DatagramSocket socket = new DatagramSocket();
+                socket.setBroadcast(true);
+                String defaultMessage = "Requesting server IP";
+                byte[] buffer = defaultMessage.getBytes();
+                InetAddress broadcastAddress = InetAddress.getByName("255.255.255.255");
+                DatagramPacket packet = new DatagramPacket(buffer, buffer.length, broadcastAddress, 12345);
+                socket.send(packet);
+
+                byte[] responseBuffer = new byte[1024];
+                DatagramPacket responsePacket = new DatagramPacket(responseBuffer, responseBuffer.length);
+                socket.receive(responsePacket);
+
+                InetAddress serverAddress = responsePacket.getAddress();
+                String serverIp = serverAddress.getHostAddress();
+                runOnUiThread(() -> Toast.makeText(Contact.this, "Server IP: " + serverIp, Toast.LENGTH_LONG).show());
+
+                socket.close();
+
+                // Connect to the server using TCP
+                Socket client = new Socket(serverIp, 1234);
                 SocketManager.getInstance().setSocket(client);
                 printwriter = new PrintWriter(client.getOutputStream(), true);
-                BufferedReader in = new BufferedReader(new InputStreamReader(client.getInputStream()));
 
                 if (username != null) {
                     printwriter.println(username);
                 }
-
-
 
                 runOnUiThread(() -> {
                     if (isConnected()) {
