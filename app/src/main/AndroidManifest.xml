@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.chat">
     <!-- We require internet permission to perform networking tasks -->
@@ -11,23 +12,28 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Chat">
         <activity
+            android:name=".Signup"
+            android:screenOrientation="portrait"
+            android:exported="false" />
+        <activity
             android:name=".PrivateMessageActivity"
             android:exported="false" />
         <activity
             android:name=".Contact"
             android:exported="false"
-            android:theme="@style/Theme.Chat"
             android:screenOrientation="portrait"
-            />
+            android:theme="@style/Theme.Chat" />
         <activity
             android:name=".Login"
             android:exported="true"
+            android:screenOrientation="portrait"
             android:theme="@style/Theme.Chat">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
     </application>
+
 </manifest>

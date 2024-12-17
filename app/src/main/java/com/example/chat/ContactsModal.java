@@ -16,4 +16,7 @@ public class ContactsModal {
     public String getStatus() {
         return status;
     }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 }

@@ -14,6 +14,7 @@ public class ContactsRVAdapter extends RecyclerView.Adapter<ContactsRVAdapter.Co
 
     private ArrayList<ContactsModal> contactsModalArrayList;
     private OnItemClickListener onItemClickListener;
+    private View.OnLongClickListener onLongClickListener;
 
     public ContactsRVAdapter(ArrayList<ContactsModal> contactsModalArrayList) {
         this.contactsModalArrayList = contactsModalArrayList;
@@ -26,12 +27,15 @@ public class ContactsRVAdapter extends RecyclerView.Adapter<ContactsRVAdapter.Co
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.onItemClickListener = listener;
     }
+    public void setOnLongClickListener(View.OnLongClickListener listener) {
+        this.onLongClickListener = listener;
+    }
 
     @NonNull
     @Override
     public ContactsViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.contacts_rv_item, parent, false);
-        return new ContactsViewHolder(view, onItemClickListener);
+        return new ContactsViewHolder(view, onItemClickListener , onLongClickListener);
     }
 
     @Override
@@ -50,7 +54,7 @@ public class ContactsRVAdapter extends RecyclerView.Adapter<ContactsRVAdapter.Co
 
         TextView usernameTV, statusTV;
 
-        public ContactsViewHolder(@NonNull View itemView, OnItemClickListener listener) {
+        public ContactsViewHolder(@NonNull View itemView, OnItemClickListener listener, View.OnLongClickListener longClickListener) {
             super(itemView);
             usernameTV = itemView.findViewById(R.id.idTVContactName);
             statusTV = itemView.findViewById(R.id.idTVStatus);
@@ -65,6 +69,12 @@ public class ContactsRVAdapter extends RecyclerView.Adapter<ContactsRVAdapter.Co
                         }
                     }
                 }
+            });
+            itemView.setOnLongClickListener(v -> {
+                if (longClickListener != null) {
+                    return longClickListener.onLongClick(v);
+                }
+                return false;
             });
         }
     }
