@@ -39,8 +39,8 @@ public class Signup extends AppCompatActivity {
             return;
         }
 
-        username = findViewById(R.id.editTextTextPassword);
-        password = findViewById(R.id.editTextTextUsername);
+        username = findViewById(R.id.editTextUsername);
+        password = findViewById(R.id.editpassword);
         confirmPassword = findViewById(R.id.editTextconfirmPassword);
         button = findViewById(R.id.button);
 
@@ -66,7 +66,7 @@ public class Signup extends AppCompatActivity {
 
     private void handleSignup() {
         String usernameStr = username.getText().toString().trim();
-        String passwordStr = password.getText().toString();
+        String passwordStr = password.getText().toString().trim();
         String confirmPasswordStr = confirmPassword.getText().toString();
 
         if (usernameStr.isEmpty() || passwordStr.isEmpty() || confirmPasswordStr.isEmpty()) {
@@ -109,7 +109,9 @@ public class Signup extends AppCompatActivity {
                                     Intent intent = new Intent(Signup.this, Contact.class);
                                     intent.putExtra("username", uname);
                                     intent.putExtra("serverip", serverip);
+                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                                     startActivity(intent);
+                                    finish();
                                 } else {
                                     Toast.makeText(Signup.this, "User already exists in database", Toast.LENGTH_SHORT).show();
                                 }

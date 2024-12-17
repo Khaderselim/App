@@ -16,28 +16,34 @@
 
     <ListView
         android:id="@+id/textView1"
-        android:layout_width="395dp"
-        android:layout_height="564dp"
-        android:layout_above="@+id/editText1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_above="@+id/messageInputLayout"
         android:layout_alignParentTop="true"
         android:layout_marginTop="58dp"
+        android:layout_weight="1"
         android:stackFromBottom="true"
         android:transcriptMode="normal" />
 
-    <EditText
-        android:id="@+id/editText1"
+    <LinearLayout
+        android:id="@+id/messageInputLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/button1" />
-
-    <Button
-        android:id="@+id/button1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:text="Send" />
+        android:orientation="horizontal">
 
-    <!-- Add more UI elements for private messaging here -->
+        <EditText
+            android:id="@+id/editText1"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Type a message" />
+
+        <Button
+            android:id="@+id/button1"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@android:drawable/ic_menu_send" />
+    </LinearLayout>
 
 </RelativeLayout>

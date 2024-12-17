@@ -36,6 +36,15 @@ public class DatabaseManager {
         return database.query("contact", null, "user_id=?", new String[]{String.valueOf(userId)}, null, null, null);
     }
 
+ public void updateContact(String username, String newUsername) {
+    ContentValues values = new ContentValues();
+    values.put("contact_name", newUsername);
+    database.update("contact", values, "contact_name=?", new String[]{username});
+}
+
+   public void deleteContact(String username) {
+     database.delete("contact", "contact_name=?", new String[]{username});
+}
     public void close() {
         dbHelper.close();
     }

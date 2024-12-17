@@ -8,7 +8,6 @@ import com.google.android.material.snackbar.Snackbar;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -43,7 +42,7 @@ public class Login extends AppCompatActivity {
 
         dbManager = new DatabaseManager(this);
 
-        username = findViewById(R.id.editTextTextPassword);
+        username = findViewById(R.id.editTextUsername);
         password = findViewById(R.id.editTextPassword);
         button = findViewById(R.id.button);
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -83,8 +82,8 @@ public class Login extends AppCompatActivity {
                 SocketManager.getInstance().setSocket(client);
                 runOnUiThread(() -> {
                     button.setOnClickListener(view -> {
-                        String usernameText = username.getText().toString();
-                        String passwordText = password.getText().toString();
+                        String usernameText = username.getText().toString().trim();
+                        String passwordText = password.getText().toString().trim();
                         if (!usernameText.isEmpty() && !passwordText.isEmpty()) {
                             new Thread(new ClientThread(usernameText, passwordText)).start();
                         } else {
@@ -130,7 +129,9 @@ public class Login extends AppCompatActivity {
                                 Intent intent = new Intent(Login.this, Contact.class);
                                 intent.putExtra("username", uname);
                                 intent.putExtra("serverip", serverip);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                                 startActivity(intent);
+                                finish();
                             });
                         } else {
                             runOnUiThread(() -> Toast.makeText(Login.this, "Invalid username or password", Toast.LENGTH_SHORT).show());

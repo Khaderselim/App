@@ -4,8 +4,10 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.widget.EditText;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -66,8 +68,58 @@ public class Contact extends AppCompatActivity {
             ContactsModal selectedContact = contactsModalArrayList.get(position);
             checkUserOnlineStatus(selectedContact.getUsername());
         });
+        contactsRVAdapter.setOnLongClickListener(v -> {
+            int position = contactsRV.getChildAdapterPosition(v);
+            showPopupMenu(position);
+            return true;
+        });
 
         new Thread(new ConnectionThread()).start();
+    }
+    private void showPopupMenu(int position) {
+        PopupMenu popupMenu = new PopupMenu(this, contactsRV.findViewHolderForAdapterPosition(position).itemView);
+        popupMenu.getMenuInflater().inflate(R.menu.contact_options_menu, popupMenu.getMenu());
+        popupMenu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.delete_contact) {
+                ContactsModal selectedContact = contactsModalArrayList.get(position);
+                contactsModalArrayList.remove(position);
+                dbManager.deleteContact(selectedContact.getUsername());
+                contactsRVAdapter.notifyDataSetChanged();
+                return true;
+            } else if(item.getItemId() == R.id.modify_contact) {
+                showEditContactDialog(position, contactsModalArrayList.get(position));
+                return true;
+            }else {
+                return false;
+            }
+        });
+        popupMenu.show();
+    }
+    private void showEditContactDialog(int position, ContactsModal contact) {
+        EditText editText = new EditText(this);
+        editText.setText(contact.getUsername());
+        new AlertDialog.Builder(this)
+                .setTitle("Edit Contact")
+                .setView(editText)
+                .setPositiveButton("Save", (dialog, which) -> {
+                    String newUsername = editText.getText().toString();
+                    if (!newUsername.isEmpty()) {
+                        editContactValid(newUsername, isValid -> {
+                                if (isValid && !newUsername.equals(contact.getUsername())) {
+                                    dbManager.updateContact(contact.getUsername(), newUsername);
+                                    contact.setUsername(newUsername);
+                                    contactsRVAdapter.notifyItemChanged(position);
+                                } else {
+                                    Toast.makeText(Contact.this, "Failed to find username", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+
+                    } else {
+                        Toast.makeText(Contact.this, "Username cannot be empty", Toast.LENGTH_SHORT).show();
+                    }
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     private void loadContacts() {
@@ -78,7 +130,37 @@ public class Contact extends AppCompatActivity {
         }
         contactsRVAdapter.notifyDataSetChanged();
     }
+private void editContactValid(String newUsername, ValidationCallback callback) {
+    new Thread(() -> {
+        if (isConnected()) {
+            printwriter.println("***ADD***");
+            printwriter.println(newUsername);
+            try {
+                BufferedReader in = new BufferedReader(new InputStreamReader(SocketManager.getInstance().getSocket().getInputStream()));
+                String serverResponse = in.readLine();
+                if (serverResponse == null || serverResponse.equals("Error") || newUsername.equals(username) || !isUsernameValid(newUsername)) {
+                    runOnUiThread(() -> {
+                        Toast.makeText(Contact.this, "Failed to find username", Toast.LENGTH_SHORT).show();
+                        callback.onValidationResult(false);
+                    });
+                } else {
+                    runOnUiThread(() -> callback.onValidationResult(true));
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            runOnUiThread(() -> {
+                Toast.makeText(Contact.this, "Not connected to server", Toast.LENGTH_SHORT).show();
+                callback.onValidationResult(false);
+            });
+        }
+    }).start();
+}
 
+public interface ValidationCallback {
+    void onValidationResult(boolean isValid);
+}
     private void sendUsernameToServer(String newUsername) {
         new Thread(() -> {
             if (isConnected()) {
